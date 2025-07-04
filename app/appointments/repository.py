@@ -1,5 +1,6 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.appointments.models import Appointments
 from app.appointments.schemas import AppointmentCreateSchema
 
@@ -23,5 +24,7 @@ class AppointmentsRepository:
     async def get_appointment_by_id(self, appointment_id: int) -> Appointments | None:
         query = select(Appointments).where(Appointments.id == appointment_id)
         async with self.db_session as session:
-            appointment: Appointments = (await session.execute(query)).scalar_one_or_none()
+            appointment: Appointments = (
+                await session.execute(query)
+            ).scalar_one_or_none()
         return appointment

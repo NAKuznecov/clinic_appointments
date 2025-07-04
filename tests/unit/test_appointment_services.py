@@ -1,7 +1,6 @@
 import asyncio
-from typing import Any
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from pydantic import BaseModel
 
@@ -32,14 +31,20 @@ class AppointmentsController:
     def __init__(self, repo: IAppointmentRepository):
         self.appointment_repository = repo
 
-    async def create_appointment(self, body: AppointmentCreateSchema) -> AppointmentSchema:
+    async def create_appointment(
+        self, body: AppointmentCreateSchema
+    ) -> AppointmentSchema:
         appointment_id = await self.appointment_repository.create_appointment(body)
-        appointment = await self.appointment_repository.get_appointment_by_id(appointment_id)
+        appointment = await self.appointment_repository.get_appointment_by_id(
+            appointment_id
+        )
 
         return AppointmentSchema(**appointment)
 
     async def get_appointment_by_id(self, appointment_id: int) -> AppointmentSchema:
-        appointment = await self.appointment_repository.get_appointment_by_id(appointment_id)
+        appointment = await self.appointment_repository.get_appointment_by_id(
+            appointment_id
+        )
         return AppointmentSchema(**appointment)
 
 
@@ -60,11 +65,11 @@ def mock_repo():
         async def get_appointment_by_id(self, appointment_id: int) -> dict | None:
             if appointment_id == 1:
                 return {
-                    'id': 1,
-                    'doctor_id': 1,
-                    'patient_id': 2,
-                    'start_time': datetime.fromisoformat('2025-07-08T10:00:00'),
-                    'description': 'Test appointment'
+                    "id": 1,
+                    "doctor_id": 1,
+                    "patient_id": 2,
+                    "start_time": datetime.fromisoformat("2025-07-08T10:00:00"),
+                    "description": "Test appointment",
                 }
             else:
                 return None
@@ -79,18 +84,22 @@ async def test_create_appointment(mock_repo):
     body = AppointmentCreateSchema(
         doctor_id=1,
         patient_id=2,
-        start_time=datetime.fromisoformat('2025-07-08T10:00:00'),
-        description='Test appointment'
+        start_time=datetime.fromisoformat("2025-07-08T10:00:00"),
+        description="Test appointment",
     )
 
     result = await controller.create_appointment(body)
 
-    assert isinstance(result, AppointmentSchema), "Результат — не экземпляр AppointmentSchema."
+    assert isinstance(
+        result, AppointmentSchema
+    ), "Результат — не экземпляр AppointmentSchema."
     assert result.id == 1, "Полученный ID некорректен."
     assert result.doctor_id == 1, "Неверный doctor_id."
     assert result.patient_id == 2, "Неверный patient_id."
-    assert result.start_time.isoformat() == '2025-07-08T10:00:00', "Время назначено неправильно."
-    assert result.description == 'Test appointment', "Описания не совпадают."
+    assert (
+        result.start_time.isoformat() == "2025-07-08T10:00:00"
+    ), "Время назначено неправильно."
+    assert result.description == "Test appointment", "Описания не совпадают."
 
 
 @pytest.mark.asyncio
@@ -99,9 +108,13 @@ async def test_get_appointment_by_id(mock_repo):
 
     result = await controller.get_appointment_by_id(1)
 
-    assert isinstance(result, AppointmentSchema), "Возвращённый объект не является объектом типа AppointmentSchema."
+    assert isinstance(
+        result, AppointmentSchema
+    ), "Возвращённый объект не является объектом типа AppointmentSchema."
     assert result.id == 1, "Полученный ID неправильный."
     assert result.doctor_id == 1, "Неверный doctor_id."
     assert result.patient_id == 2, "Неверный patient_id."
-    assert result.start_time.isoformat() == '2025-07-08T10:00:00', "Неправильно установлено время начала встречи."
-    assert result.description == 'Test appointment', "Описание назначения неправильное."
+    assert (
+        result.start_time.isoformat() == "2025-07-08T10:00:00"
+    ), "Неправильно установлено время начала встречи."
+    assert result.description == "Test appointment", "Описание назначения неправильное."

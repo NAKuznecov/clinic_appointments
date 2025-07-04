@@ -1,14 +1,16 @@
-from datetime import datetime
 import asyncio
+from datetime import datetime
 
 import pytest
 import pytest_asyncio
-
+from sqlalchemy import Column, DateTime, Integer, String, select
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.schema import CreateTable
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from app.settings import Settings
+
+from app.appointments.models import Appointments
 from app.database.database import Base
+from app.settings import Settings
 
 
 class Appointment(Base):
@@ -25,7 +27,9 @@ def settings():
     return Settings()
 
 
-engine = create_async_engine(url="sqlite+aiosqlite:///test.db", future=True, echo=True, pool_pre_ping=True)
+engine = create_async_engine(
+    url="sqlite+aiosqlite:///test.db", future=True, echo=True, pool_pre_ping=True
+)
 
 AsyncSessionFactory = async_sessionmaker(
     engine,
@@ -48,11 +52,6 @@ async def get_db_session() -> AsyncSession:
     yield AsyncSessionFactory()
 
 
-import pytest
-from sqlalchemy import select, insert
-
-from app.appointments.models import Appointments
-
 pytestmark = pytest.mark.asyncio
 
 
@@ -71,7 +70,7 @@ async def test_create_and_get_appointment(get_db_session):
         id=1,
         doctor_id=1,
         patient_id=2,
-        start_time=datetime.fromisoformat('2025-12-03T10:00:00'),
+        start_time=datetime.fromisoformat("2025-12-03T10:00:00"),
         description="some",
     )
     async with get_db_session as session:
@@ -80,7 +79,9 @@ async def test_create_and_get_appointment(get_db_session):
         assert isinstance(appointment_model, Appointments)
 
         # Немедленно считываем назначение
-        appointment = (await session.execute(select(Appointments).where(Appointments.id == 1))).scalar_one_or_none()
+        appointment = (
+            await session.execute(select(Appointments).where(Appointments.id == 1))
+        ).scalar_one_or_none()
         assert appointment is not None
         assert appointment.doctor_id == 1
 

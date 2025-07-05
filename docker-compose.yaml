@@ -1,22 +1,30 @@
-version: '3.9'
+# docker compose build - используем эту команду, если меняли что-то в Dockerfile
+# docker compose up - если изменили только docker-compose
 
+version: "3.8"
 services:
-
-  app:
-    build: .
-    ports:
-      - '8000:8000'
-    volumes:
-      - .:/app
-
   db:
-    image: postgres:16.2
-    restart: always
-    shm_size: 128mb
+    image: postgres:15
+    container_name: appointments
+    env_file: # Файл с переменными окружения (Вместо environment)
+      - .local.env
     ports:
-      - '5432:5432'
-
+      - 5432:5432 # Порт нужен, только если нам нужен доступ к контейнеру напрямую
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
       POSTGRES_DB: appointments
+
+  appointments:
+    image: appointments_app
+    build:
+      context: .
+    container_name: appointments_app
+    env_file:
+      - .local.env
+    depends_on: # Запускаем только после запуска БД и Redis (depends on = зависит от)
+      - db
+    # Если не работает эта команда, используйте закомментированную
+    ports:
+      - 7777:8000
+

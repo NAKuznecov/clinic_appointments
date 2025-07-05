@@ -48,5 +48,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
+      - name: Clean previous artifacts
+        run: rm -rf *.db
       - name: Run Unit Tests
         run: poetry run pytest tests

@@ -1,30 +1,28 @@
-# docker compose build - используем эту команду, если меняли что-то в Dockerfile
-# docker compose up - если изменили только docker-compose
-
-version: "3.8"
+version: '3.8'
 services:
   db:
-    image: postgres:15
-    container_name: appointments
-    env_file: # Файл с переменными окружения (Вместо environment)
-      - .local.env
-    ports:
-      - 5432:5432 # Порт нужен, только если нам нужен доступ к контейнеру напрямую
+    image: postgres:latest
+    restart: always
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: postgres
       POSTGRES_DB: appointments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
-  appointments:
-    image: appointments_app
-    build:
-      context: .
-    container_name: appointments_app
+  app:
+    build: .
+    command: bash -c "sleep 10 && python -m poetry run alembic upgrade head && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    depends_on:
+      - db
     env_file:
       - .local.env
-    depends_on: # Запускаем только после запуска БД и Redis (depends on = зависит от)
-      - db
-    # Если не работает эта команда, используйте закомментированную
+    volumes:
+      - ./:/app
     ports:
-      - 7777:8000
+      - "8000:8000"
 
+volumes:
+  pgdata:

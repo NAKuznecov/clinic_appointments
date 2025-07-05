@@ -18,6 +18,4 @@ RUN poetry cache clear pypi --all
 # Устанавливаем зависимости напрямую в проект
 RUN poetry install --no-root
 
-RUN poetry run alembic upgrade head
-
 CMD ["./wait-for-it.sh", "db:5432", "poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

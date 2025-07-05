@@ -26,8 +26,10 @@ jobs:
           poetry install
       - name: Black
         run: poetry run black app
-      - name: Ruff
-        run: poetry run ruff check app
+      - name: isort
+        run: poetry run isort --check-only app
+      - name: flake8
+        run: poetry run flake8 app
 
   unit-test:
     runs-on: ubuntu-latest

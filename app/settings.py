@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DB_DRIVER: str
 
     class Config:
-        env_file = ".local.env"
+        env_file = ".example.env"
 
     @property
     def db_url(self) -> str:

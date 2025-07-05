@@ -41,4 +41,3 @@ exclude = '.venv/'
 
 [tool.isort]
 skip = [".venv/", "migrations/", "alembic.ini"]
-line-lenght = 120

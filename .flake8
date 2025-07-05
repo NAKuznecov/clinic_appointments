@@ -3,3 +3,6 @@ exclude =
     .venv/,
     migrations/,
     alembic.ini
+
+# Максимальная длина строки
+max-line-length = 120

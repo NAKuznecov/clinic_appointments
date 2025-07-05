@@ -49,7 +49,9 @@ async def init_models():
 
 @pytest_asyncio.fixture(scope="function")
 async def get_db_session() -> AsyncSession:
-    yield AsyncSessionFactory()
+    session = AsyncSessionFactory()
+    yield session
+    await session.close()
 
 
 pytestmark = pytest.mark.asyncio
@@ -66,8 +68,6 @@ async def drop_all_tables():
 
 
 async def test_create_and_get_appointment(get_db_session):
-    session = await anext(get_db_session())
-
     appointment_model = Appointments(
         id=1,
         doctor_id=1,
@@ -75,36 +75,17 @@ async def test_create_and_get_appointment(get_db_session):
         start_time=datetime.fromisoformat("2025-12-03T10:00:00"),
         description="some",
     )
+    async with get_db_session as session:
+        session.add(appointment_model)
+        await session.commit()
+        assert isinstance(appointment_model, Appointments)
 
-    session.add(appointment_model)
-    await session.commit()
-    assert isinstance(appointment_model, Appointments)
-
-    # Немедленно считываем назначение
-    appointment = (
-        await session.execute(select(Appointments).where(Appointments.id == 1))
-    ).scalar_one_or_none()
-    assert appointment is not None
-    assert appointment.doctor_id == 1
-# async def test_create_and_get_appointment(get_db_session):
-#     appointment_model = Appointments(
-#         id=1,
-#         doctor_id=1,
-#         patient_id=2,
-#         start_time=datetime.fromisoformat("2025-12-03T10:00:00"),
-#         description="some",
-#     )
-#     async with get_db_session as session:
-#         session.add(appointment_model)
-#         await session.commit()
-#         assert isinstance(appointment_model, Appointments)
-#
-#         # Немедленно считываем назначение
-#         appointment = (
-#             await session.execute(select(Appointments).where(Appointments.id == 1))
-#         ).scalar_one_or_none()
-#         assert appointment is not None
-#         assert appointment.doctor_id == 1
+        # Немедленно считываем назначение
+        appointment = (
+            await session.execute(select(Appointments).where(Appointments.id == 1))
+        ).scalar_one_or_none()
+        assert appointment is not None
+        assert appointment.doctor_id == 1
 
 
 if __name__ == "__main__":

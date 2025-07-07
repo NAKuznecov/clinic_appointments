@@ -23,6 +23,17 @@ migration-create:
 migration-apply:
 	alembic upgrade head
 
+lint:
+	@echo "Running style checks..."
+	flake8 .
+	isort . --check-only
+	black . --check
+	@echo "Style checks completed."
+
+test:
+	@echo "Running tests..."
+	pytest
+	@echo "Tests completed."
 
 help: ## Show this help message
 	@echo "Usage: make [command]"
